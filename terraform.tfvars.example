@@ -1,0 +1,7 @@
+instance_names = ["app-1", "app-2", "db-1"]
+
+# Optional: omit to use default VPC and first subnet
+# vpc_id         = "vpc-xxxxxxxx"
+# subnet_id      = "subnet-xxxxxxxx"
+
+aws_region = "us-east-1"

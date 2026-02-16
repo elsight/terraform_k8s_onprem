@@ -1,0 +1,44 @@
+data "aws_ssm_parameter" "ubuntu_24_ami" {
+  name = "/aws/service/canonical/ubuntu/server/24.04/stable/current/amd64/hvm/ebs-gp3/ami-id"
+}
+
+resource "aws_security_group" "ec2" {
+  name        = "ec2-ssh-https-${replace(var.vpc_id, "vpc-", "")}"
+  description = "Allow SSH and HTTPS for EC2 instances"
+  vpc_id      = var.vpc_id
+
+  ingress {
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
+resource "aws_instance" "this" {
+  for_each = toset(var.instance_names)
+
+  ami                         = data.aws_ssm_parameter.ubuntu_24_ami.value
+  instance_type               = "t3.xlarge"
+  subnet_id                   = var.subnet_id
+  vpc_security_group_ids      = [aws_security_group.ec2.id]
+  associate_public_ip_address = true
+
+  tags = {
+    Name = each.key
+  }
+}
