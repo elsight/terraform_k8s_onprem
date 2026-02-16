@@ -2,6 +2,22 @@ data "aws_ssm_parameter" "ubuntu_24_ami" {
   name = "/aws/service/canonical/ubuntu/server/24.04/stable/current/amd64/hvm/ebs-gp3/ami-id"
 }
 
+resource "tls_private_key" "ec2" {
+  algorithm = "RSA"
+  rsa_bits  = 4096
+}
+
+resource "aws_key_pair" "ec2" {
+  key_name   = "ec2-key-${replace(var.vpc_id, "vpc-", "")}"
+  public_key = tls_private_key.ec2.public_key_openssh
+}
+
+resource "local_file" "ec2_key" {
+  content         = tls_private_key.ec2.private_key_pem
+  filename        = "${path.root}/ec2-key.pem"
+  file_permission = "0600"
+}
+
 resource "aws_security_group" "ec2" {
   name        = "ec2-ssh-https-${replace(var.vpc_id, "vpc-", "")}"
   description = "Allow SSH and HTTPS for EC2 instances"
@@ -34,6 +50,7 @@ resource "aws_instance" "this" {
 
   ami                         = data.aws_ssm_parameter.ubuntu_24_ami.value
   instance_type               = "t3.xlarge"
+  key_name                    = aws_key_pair.ec2.key_name
   subnet_id                   = var.subnet_id
   vpc_security_group_ids      = [aws_security_group.ec2.id]
   associate_public_ip_address = true

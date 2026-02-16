@@ -12,3 +12,8 @@ output "instance_public_ips" {
   description = "Map of instance name to public IP"
   value       = module.ec2.instance_public_ips
 }
+
+output "key_path" {
+  description = "Path to the generated SSH private key"
+  value       = module.ec2.key_path
+}

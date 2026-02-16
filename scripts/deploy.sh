@@ -41,6 +41,10 @@ if command -v jq &>/dev/null; then
   OUTPUTS=$(terraform output -json 2>/dev/null || true)
   if [ -n "${OUTPUTS}" ]; then
     {
+      echo "## EC2 Instances"
+      echo ""
+      echo "SSH key: \`${PROJECT_ROOT}/ec2-key.pem\`"
+      echo ""
       echo "| Instance | Instance ID | Private IP | Public IP |"
       echo "|----------|-------------|------------|-----------|"
       jq -r '
@@ -49,6 +53,8 @@ if command -v jq &>/dev/null; then
         . as $n |
         "| \($n) | \($root.instance_ids.value[$n]) | \($root.instance_private_ips.value[$n] // "-") | \($root.instance_public_ips.value[$n] // "-") |"
       ' <<< "${OUTPUTS}"
+      echo ""
+      echo "Example: \`ssh -i ec2-key.pem ubuntu@<public_ip>\`"
     } > "${PROJECT_ROOT}/ip.md"
     echo "Updated ip.md"
   fi

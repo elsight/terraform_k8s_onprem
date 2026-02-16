@@ -28,6 +28,7 @@ if ! command -v jq &>/dev/null; then
 fi
 
 NAMES=$(jq -r '.outputs.instance_ids.value | keys[]?' "${STATE_FILE}" 2>/dev/null || true)
+OUTPUTS=$(cat "${STATE_FILE}")
 rm -f "${STATE_FILE}"
 
 echo ""
@@ -43,6 +44,10 @@ if [ -z "${NAMES}" ]; then
       outputs=$(terraform output -json 2>/dev/null || true)
       if [ -n "${outputs}" ]; then
         {
+          echo "## EC2 Instances"
+          echo ""
+          echo "SSH key: \`${PROJECT_ROOT}/ec2-key.pem\`"
+          echo ""
           echo "| Instance | Instance ID | Private IP | Public IP |"
           echo "|----------|-------------|------------|-----------|"
           jq -r '
@@ -51,6 +56,8 @@ if [ -z "${NAMES}" ]; then
             . as $n |
             "| \($n) | \($root.instance_ids.value[$n]) | \($root.instance_private_ips.value[$n] // "-") | \($root.instance_public_ips.value[$n] // "-") |"
           ' <<< "${outputs}"
+          echo ""
+          echo "Example: \`ssh -i ec2-key.pem ubuntu@<public_ip>\`"
         } > "${PROJECT_ROOT}/ip.md"
         echo "Updated ip.md"
       fi
@@ -64,6 +71,10 @@ update_ip_md() {
   outputs=$(terraform output -json 2>/dev/null || true)
   if [ -n "${outputs}" ]; then
     {
+      echo "## EC2 Instances"
+      echo ""
+      echo "SSH key: \`${PROJECT_ROOT}/ec2-key.pem\`"
+      echo ""
       echo "| Instance | Instance ID | Private IP | Public IP |"
       echo "|----------|-------------|------------|-----------|"
       jq -r '
@@ -72,13 +83,23 @@ update_ip_md() {
         . as $n |
         "| \($n) | \($root.instance_ids.value[$n]) | \($root.instance_private_ips.value[$n] // "-") | \($root.instance_public_ips.value[$n] // "-") |"
       ' <<< "${outputs}"
+      echo ""
+      echo "Example: \`ssh -i ec2-key.pem ubuntu@<public_ip>\`"
     } > "${PROJECT_ROOT}/ip.md"
     echo "Updated ip.md"
   fi
 }
 
-echo "Running EC2 instances:"
-echo "${NAMES}" | nl -w2 -s'. '
+echo "All EC2 instances:"
+echo ""
+echo "| Instance | Instance ID | Private IP | Public IP |"
+echo "|----------|-------------|------------|-----------|"
+jq -r '
+  . as $root |
+  .outputs.instance_ids.value | keys[] |
+  . as $n |
+  "| \($n) | \($root.outputs.instance_ids.value[$n]) | \($root.outputs.instance_private_ips.value[$n] // "-") | \($root.outputs.instance_public_ips.value[$n] // "-") |"
+' <<< "${OUTPUTS}"
 echo ""
 echo "Actions: enter instance number to REMOVE, or new name to ADD"
 echo ""
