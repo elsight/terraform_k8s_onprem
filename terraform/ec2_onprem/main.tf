@@ -1,8 +1,5 @@
 terraform {
   backend "s3" {
-    bucket = "930579047961-tfstate"
-    region = "us-east-1"
-    key    = "services/dev/ec2.tfstate"
   }
 
   required_providers {
