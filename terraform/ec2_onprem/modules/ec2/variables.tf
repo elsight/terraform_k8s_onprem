@@ -11,7 +11,8 @@ variable "subnet_id" {
 variable "instance_configs" {
   description = "Map of instance configurations. Key is the instance name."
   type = map(object({
-    instance_type    = optional(string, "t3.medium")
+    instance_type   = optional(string, "t3.medium")
+    enable_s3_mount = optional(bool, false)
     volume = optional(object({
       size = optional(number, 50)
       type = optional(string, "gp3")
@@ -25,4 +26,28 @@ variable "instance_configs" {
       description = string
     })), [])
   }))
+}
+
+variable "s3_bucket_name" {
+  description = "The S3 bucket name to mount"
+  type        = string
+  default     = null
+}
+
+variable "s3_mount_point" {
+  description = "The mount point path on the instance"
+  type        = string
+  default     = "/mnt/s3"
+}
+
+variable "s3_mount_readonly" {
+  description = "Whether to mount as read-only"
+  type        = bool
+  default     = true
+}
+
+variable "s3_instance_profile_name" {
+  description = "The IAM instance profile name for S3 access"
+  type        = string
+  default     = null
 }

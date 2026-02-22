@@ -11,4 +11,7 @@ locals {
   region    = "us-east-1"
   vpc_id    = data.terraform_remote_state.vpc.outputs.vpc_id[local.region]
   subnet_id  = data.terraform_remote_state.vpc.outputs.public_subnet_ids[local.region][0]
+
+  # Check if any instance has S3 mounting enabled
+  s3_mount_enabled = anytrue([for k, v in var.instance_configs : try(v.enable_s3_mount, false)])
 }

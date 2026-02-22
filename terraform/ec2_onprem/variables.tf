@@ -24,6 +24,7 @@ variable "instance_configs" {
   description = "Map of instance configurations. Key is the instance name."
   type = map(object({
     instance_type    = optional(string, "t3.medium")
+    enable_s3_mount  = optional(bool, false)
     volume = optional(object({
       size = optional(number, 50)
       type = optional(string, "gp3")
@@ -37,4 +38,22 @@ variable "instance_configs" {
       description = string
     })), [])
   }))
+}
+
+variable "s3_mount_point" {
+  description = "The mount point path on the instance where the S3 bucket will be mounted"
+  type        = string
+  default     = "/mnt/s3"
+}
+
+variable "s3_mount_readonly" {
+  description = "Whether to mount the S3 bucket as read-only. If false, allows writing new files (but not deletes unless explicitly enabled)"
+  type        = bool
+  default     = true
+}
+
+variable "s3_mount_allow_delete" {
+  description = "Whether to allow delete operations on the S3 bucket. Only applicable if s3_mount_readonly is false"
+  type        = bool
+  default     = false
 }
