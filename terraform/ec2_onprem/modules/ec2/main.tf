@@ -70,6 +70,16 @@ resource "aws_instance" "this" {
   vpc_security_group_ids      = [aws_security_group.ec2.id]
   associate_public_ip_address = true
 
+  # Conditionally attach IAM instance profile for S3 mounting
+  iam_instance_profile = each.value.enable_s3_mount ? var.s3_instance_profile_name : null
+
+  # Conditionally add user_data for S3 mount setup
+  user_data = each.value.enable_s3_mount ? templatefile("${path.module}/mount-s3-setup.sh.tpl", {
+    bucket_name   = var.s3_bucket_name
+    mount_point   = var.s3_mount_point
+    mount_options = var.s3_mount_readonly ? "ro" : "rw"
+  }) : null
+
   root_block_device {
     volume_size = each.value.volume.size
     volume_type = each.value.volume.type
