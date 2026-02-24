@@ -1,6 +1,10 @@
 resource "tls_private_key" "ec2" {
   algorithm = "RSA"
   rsa_bits  = 4096
+
+  lifecycle {
+    ignore_changes = all
+  }
 }
 
 resource "aws_key_pair" "ec2" {
@@ -87,5 +91,9 @@ resource "aws_instance" "this" {
 
   tags = {
     Name = each.key
+  }
+
+  lifecycle {
+    ignore_changes = [ami]
   }
 }

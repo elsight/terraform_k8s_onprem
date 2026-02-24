@@ -14,7 +14,12 @@ instance_configs = {
   },
   "Prabin-onprem-k8s" = {
     instance_type = "t3.xlarge"
-  }
+  },
+  "test_offline-onprem-k8s" = {
+    instance_type = "t3.xlarge"
+  },
+
+
 }
 
 # S3 mount configuration (applies to instances with enable_s3_mount = true)
